@@ -20,7 +20,7 @@ def limit_text(event):
     """Prevent entering more than the allowed limit."""
     max_chars = 4
     text = entry.get("1.0", "end-1c")  # Get text excluding last newline
-    if len(text) >= max_chars and event.keysym not in ("BackSpace", "Delete"):
+    if (len(text) >= max_chars and event.keysym not in ("BackSpace", "Delete")) or event.keysym in ("Return"):
         return "break"  # Prevent further input
 
 entry.bind("<KeyPress>", limit_text)
@@ -107,7 +107,7 @@ def draw(num):
     count = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
     temp = num
     for i in range(len(str(temp))):
-        if num % 10 != 0:
+        if int(num % 10) != 0:
             shape(int(num%10), count[i])
         num /= 10
 
