@@ -8,22 +8,16 @@ root.resizable(False, False)
 WIDTH = 400
 HEIGHT = 600
 
-liveUpdate = BooleanVar()
+highlightSegments = BooleanVar()
 
 canvas = Canvas(root, width=WIDTH, height=HEIGHT, bg='lightblue')
 canvas.pack(anchor=CENTER, expand=True)
 
-Label(root, text="Enter a Number (1-9999)", font=("Arial", 12)).pack(pady=(10,0))
+Label(root, text="Enter a Number (0-9999)", font=("Arial", 12)).pack(pady=(10,5))
 entry = Text(root, height=1, width=4)
 entry.pack(pady=5)
-checkbox = Checkbutton(root, text="Auto Update", variable=liveUpdate, command=lambda: checkbox_clicked(liveUpdate.get())).pack()
-submit = Button(root, text="Enter", font=("arial", 12, "bold"), height=1, command=lambda: draw(num=int(entry.get("1.0", "end-1c")) if len(entry.get("1.0", "end-1c")) > 0 else 0))
-submit.pack(pady=(5, 10))
-
-def checkbox_clicked(checked: bool):
-    submit.config(state=DISABLED if checked else NORMAL)
-    if checked:
-        draw(num=int(entry.get("1.0", "end-1c")) if len(entry.get("1.0", "end-1c")) > 0 else 0)
+segmentsCheckbox = Checkbutton(root, text="Highlight All Segments", variable=highlightSegments, command=lambda: draw(num=int(entry.get("1.0", "end-1c")) if len(entry.get("1.0", "end-1c")) > 0 else 0))
+segmentsCheckbox.pack(pady=(5,10))
 
 def key_pressed(event):
     """Prevent entering more than the allowed limit."""
@@ -35,8 +29,7 @@ def key_pressed(event):
         return "break"
 
 def key_released(event):
-    if liveUpdate.get():
-        draw(num=int(entry.get("1.0", "end-1c")) if len(entry.get("1.0", "end-1c")) > 0 else 0)
+    draw(num=int(entry.get("1.0", "end-1c")) if len(entry.get("1.0", "end-1c")) > 0 else 0)
 
 entry.bind("<KeyPress>", key_pressed)
 entry.bind("<KeyRelease>", key_released)
@@ -47,6 +40,7 @@ SIZE = 100
 CENTER = (WIDTH/2, HEIGHT/2*0.8)
 WEIGHT = 15
 COLOR = "black"
+SEGMENTCOLOR = "grey"
 
 def add(tuple1, addend):
     if isinstance(addend, tuple):
@@ -99,22 +93,31 @@ coords = [
     [pos[0], pos[1], pos[2], pos[3]] #9
 ]
 
+def highlight_segments():
+    corners = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
+    for i in range(9):
+        for j in range(4):
+            shape(i, corners[j], SEGMENTCOLOR)
+
 def scale(coord: tuple, size: int, center: tuple = (0, 0)):
     coord = multiply(coord, size)
     coord = add(coord, center)
     return coord
 
-def shape(num: int, mult: tuple = (1, 1)):
+def shape(num: int, mult: tuple = (1, 1), lineColor=COLOR):
     for i in range(len(coords[num-1])-1):
         canvas.create_line(scale(multiply(coords[num-1][i], mult), SIZE, CENTER),
                            scale(multiply(coords[num-1][i+1], mult), SIZE, CENTER),
-                           fill=COLOR, width=WEIGHT, capstyle="round")
+                           fill=lineColor, width=WEIGHT, capstyle="round")
 
 def draw(num):
     if len(str(num)) <= 0:
         num = 0
 
     canvas.delete("all")
+
+    if highlightSegments.get():
+        highlight_segments()
 
     canvas.create_text(WIDTH/2, HEIGHT/10*8.5, text=str(num), font=("Arial", 64, "bold"))
 
